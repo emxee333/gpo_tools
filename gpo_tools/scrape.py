@@ -10,7 +10,7 @@ from psycopg2.extras import Json
 
 
 class Scraper:
-    def __init__(self, db, user, password, api_key, min_congress, max_congress,
+    def __init__(self, db, user, password, api_key, file,
                  host='localhost', update_stewart_meta=False):
         """
         GPO scraper class, which also handles database setup.
@@ -59,34 +59,22 @@ class Scraper:
         self.searched = [e[0] for e in self.cur.fetchall()]
 
         self.api_key = api_key
-        self.congresses = range(int(min_congress), int(max_congress) + 1)
+        self.file = file
 
     def scrape(self):
         """
-        Scrape data from the GPO website. Loops through the list of results until all pages are exhausted.
+        Scrape data from exported CSV query results file from GPO website. 
         """
+        fileread= open(self.file)
+        data = json.load(data)
 
-        print("Crawling and scraping the GPO website. As pages are scraped, page URLs will be printed in terminal. If "
-              "you're running the scraper for the first time, the initial crawl will take some time.")
+        for i in data['resultSet']:
+             if i not in self.searched:
+                print(i)
 
-        results_page = 'https://api.govinfo.gov/collections/CHRG/1776-01-28T20%3A18%3A10Z?offset=0&pageSize=100&' + \
-                       'congress={1}&api_key={0}'
-        for congress in self.congresses:
-            page = results_page.format(self.api_key, congress)
-            while True:
-                hearings_list = json.loads(urlopen(page).read())
-
-                for hearing in hearings_list['packages']:
-                    if hearing['packageLink'] not in self.searched:
-                        print(hearing['packageLink'])
-
-                        self._save_data(hearing)
-                        self.searched.append(hearing['packageLink'])
-                            
-                page = hearings_list['nextPage']
-                if not page:
-                    break
-
+                self._save_data(i)
+                self.searched.append(i)
+                    
     def _extract_nav(self, url_element):
         """ Helper function - grabs all unobserved links out of a given HTML element. """
 
@@ -229,7 +217,7 @@ class Scraper:
         htm_page = 'https://api.govinfo.gov/packages/{1}/htm?api_key={0}'
         mods_page = 'https://api.govinfo.gov/packages/{1}/mods?api_key={0}'
 
-        hearing_id = hearing_json['packageId']
+        hearing_id = hearing_json
 
         try:
             transcript = urlopen(htm_page.format(self.api_key, hearing_id)).read()
@@ -241,7 +229,7 @@ class Scraper:
         meta = urlopen(mods_page.format(self.api_key, hearing_id)).read()
         meta_soup = BeautifulSoup(meta)
 
-        url = hearing_json['packageLink']
+        url = "https://api.govinfo.gov/packages/" + hearing_json + "/summary"
 
         # Metadata is divided into three pieces: hearing info, member info, and witness info.
         # See functions for details on each of these metadata elements.
