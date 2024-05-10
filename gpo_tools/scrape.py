@@ -69,11 +69,11 @@ class Scraper:
         data = json.load(fileread)
 
         for i in data['resultSet']:
-             if i not in self.searched:
-                print(i)
+             if i['packageId'] not in self.searched:
+                print(i['packageId'])
 
-                self._save_data(i)
-                self.searched.append(i)
+                self._save_data(i['packageId'])
+                self.searched.append(i['packageId'])
                     
     def _extract_nav(self, url_element):
         """ Helper function - grabs all unobserved links out of a given HTML element. """
