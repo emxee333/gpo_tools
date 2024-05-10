@@ -66,7 +66,7 @@ class Scraper:
         Scrape data from exported CSV query results file from GPO website. 
         """
         fileread= open(self.file)
-        data = json.load(data)
+        data = json.load(fileread)
 
         for i in data['resultSet']:
              if i not in self.searched:
