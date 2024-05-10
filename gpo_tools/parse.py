@@ -10,7 +10,7 @@ from itertools import repeat
 
 import pkg_resources
 import psycopg2
-from gensim import corpora
+from gensim.corpora import Dictionary, BleiCorpus
 from nltk.corpus import stopwords
 from psycopg2.extras import DictCursor
 
@@ -184,7 +184,7 @@ class Parser:
 
                             index.append(index_row)
 
-            dic = corpora.Dictionary(documents)
+            dic = Dictionary(documents)
             dic.filter_extremes(no_below=min_dic_count, no_above=1)
             dic.compactify()
 
@@ -210,8 +210,8 @@ class Parser:
                 UnicodeWriter(f).writerow(header + ['word_count'])
                 UnicodeWriter(f).writerows(keep)
 
-            corpora.Dictionary.save(dic, out_dir + os.sep + out_name + '_' + today + '.lda-c.dic')
-            corpora.BleiCorpus.serialize(fname=out_dir + os.sep + out_name + '_' + today + '.lda-c',
+            Dictionary.save(dic, out_dir + os.sep + out_name + '_' + today + '.lda-c.dic')
+            BleiCorpus.serialize(fname=out_dir + os.sep + out_name + '_' + today + '.lda-c',
                                          corpus=bow_list, id2word=dic)
 
 
